@@ -503,28 +503,29 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
 
         """
         uid = None
-        if name is None:
-            number = max(number or 0, self.next_number)
-            log.debug("next number: {}".format(number))
-            uid = UID(self.prefix, self.sep, number, self.digits)
-        else:
-            try:
-                uid = UID(self.prefix, self.sep, int(name), self.digits)
-            except ValueError:
-                if not self.sep:
-                    msg = "cannot add item with name '{}' to document '{}' without a separator".format(
-                        name, self.prefix
-                    )
-                    raise DoorstopError(msg)
-                if self.sep not in settings.SEP_CHARS:
-                    msg = "cannot add item with name '{}' to document '{}' with an invalid separator '{}'".format(
-                        name, self.prefix, self.sep
-                    )
-                    raise DoorstopError(msg)
-                uid = UID(self.prefix, self.sep, name)
-                if uid.prefix != self.prefix or uid.name != name:
-                    msg = "invalid item name '{}'".format(name)
-                    raise DoorstopError(msg)
+        uid = UID(self.prefix, self.sep, name)
+        # if name is None:
+        #     number = max(number or 0, self.next_number)
+        #     log.debug("next number: {}".format(number))
+        #     uid = UID(self.prefix, self.sep, number, self.digits)
+        # else:
+        #     try:
+        #         uid = UID(self.prefix, self.sep, int(name), self.digits)
+        #     except ValueError:
+        #         if not self.sep:
+        #             msg = "cannot add item with name '{}' to document '{}' without a separator".format(
+        #                 name, self.prefix
+        #             )
+        #             raise DoorstopError(msg)
+        #         if self.sep not in settings.SEP_CHARS:
+        #             msg = "cannot add item with name '{}' to document '{}' with an invalid separator '{}'".format(
+        #                 name, self.prefix, self.sep
+        #             )
+        #             raise DoorstopError(msg)
+        #         uid = UID(self.prefix, self.sep, name)
+        #         if uid.prefix != self.prefix or uid.name != name:
+        #             msg = "invalid item name '{}'".format(name)
+        #             raise DoorstopError(msg)
 
         try:
             last = self.items[-1]
