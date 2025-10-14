@@ -229,7 +229,7 @@ class MarkdownPublisher(BasePublisher):
             if settings.ENABLE_HEADERS:
                 if item.header:
                     if to_html:
-                        uid = "{h} <small>{u}</small>".format(h=item.header, u=item.uid)
+                        uid = "{h} <small>({u})</small>".format(h=item.header, u=item.uid)
                     else:
                         uid = "{h} _{u}_".format(h=item.header, u=item.uid)
                 else:
