@@ -503,7 +503,7 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
 
         """
         uid = None
-        uid = UID(self.prefix, self.sep, name)
+        uid = UID(self.prefix, self.sep, name or number)
         # if name is None:
         #     number = max(number or 0, self.next_number)
         #     log.debug("next number: {}".format(number))
