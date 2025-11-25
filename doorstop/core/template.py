@@ -3,6 +3,7 @@
 """Functions to apply templates to documents."""
 
 import os
+import glob
 
 from yaml import safe_load
 
@@ -52,6 +53,7 @@ def get_template(obj, path, ext, template):
     template_dir = os.path.join(path, "template")
     output_dir = path
 
+    # Detect template from documents (legacy behavior)
     if is_tree(obj):
         document_template = None
         template_count = 0
@@ -67,11 +69,51 @@ I.e., only one of the documents in the tree should have a template folder."""
     else:
         document_template = obj.template
 
-    # Check for custom template and verify that it is available.
-    if template and not document_template:
-        raise common.DoorstopError(
-            "Template flag set, but no 'template' folder was found."
-        )
+    # ---------------------------------------------------------------------
+    # FIX: Handle --template PATH properly.
+    # - template is a *path* to a custom theme directory
+    # - for HTML we must return a *name* (Bottle needs name, not path)
+    # ---------------------------------------------------------------------
+    template_source = None
+    if template:
+        # Accept either:
+        # 1) a directory that IS the template root
+        # 2) a directory that CONTAINS "template/"
+        if os.path.isdir(template):
+            template_source = template
+        elif os.path.isdir(os.path.join(template, "template")):
+            template_source = os.path.join(template, "template")
+        else:
+            raise common.DoorstopError(
+                f"Template folder not found at given path: {template}"
+            )
+
+        # For HTML: determine the .tpl basename to use with Bottle
+        if ext == ".html":
+            views_dir = os.path.join(template_source, "views")
+            if not os.path.isdir(views_dir):
+                raise common.DoorstopError(
+                    f"Custom HTML template must contain a 'views' folder: {views_dir}"
+                )
+
+            # Prefer "doorstop.tpl" if present
+            if os.path.isfile(os.path.join(views_dir, "doorstop.tpl")):
+                document_template = "doorstop"
+            else:
+                # Otherwise auto-select if exactly ONE tpl exists
+                tpl_files = glob.glob(os.path.join(views_dir, "*.tpl"))
+                if len(tpl_files) == 1:
+                    document_template = os.path.splitext(
+                        os.path.basename(tpl_files[0])
+                    )[0]
+                else:
+                    raise common.DoorstopError(
+                        "Custom HTML template needs doorstop.tpl in views/ "
+                        "or exactly one *.tpl file to auto-select."
+                    )
+        else:
+            # Non-HTML: keep name as passed (legacy behavior)
+            document_template = template
 
     # Get the builtin templates.
     template_assets = os.path.join(os.path.dirname(__file__), "files", "templates")
@@ -100,24 +142,15 @@ I.e., only one of the documents in the tree should have a template folder."""
     if not os.path.isdir(output_dir):
         os.makedirs(output_dir)
 
-    # Copy template from document if it exists and template is given.
-    if document_template and template:
+    # Copy custom template if template flag was given.
+    if template_source:
         os.makedirs(template_dir)
-        if is_tree(obj):
-            for each in obj.documents:
-                log.info(
-                    "Copying %s to %s",
-                    each.template,
-                    template_dir,
-                )
-                common.copy_dir_contents(each.template, template_dir)
-        else:
-            log.info(
-                "Copying %s to %s",
-                document_template,
-                template_dir,
-            )
-            common.copy_dir_contents(document_template, template_dir)
+        log.info(
+            "Copying custom template from %s to %s",
+            template_source,
+            template_dir,
+        )
+        common.copy_dir_contents(template_source, template_dir)
 
     # Only create template_dir if template actually exists.
     elif os.path.isdir(template_assets):
@@ -140,7 +173,8 @@ I.e., only one of the documents in the tree should have a template folder."""
     if not template:
         return assets_dir, builtin_template
 
-    return assets_dir, template
+    # IMPORTANT: return the resolved NAME for HTML, not the path
+    return assets_dir, document_template
 
 
 def read_template_data(assets_dir, template):
