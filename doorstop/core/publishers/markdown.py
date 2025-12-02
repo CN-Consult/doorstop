@@ -17,6 +17,7 @@ from doorstop.core.types import is_item, iter_items
 log = common.logger(__name__)
 INDEX = "index.md"
 
+DEBUG_LINES = os.getenv("DOORSTOP_DEBUG_LINES", "0") == "1"
 
 class MarkdownPublisher(BasePublisher):
     """Markdown publisher."""
@@ -257,6 +258,25 @@ class MarkdownPublisher(BasePublisher):
         linkify = kwargs.get("linkify", False)
         to_html = kwargs.get("to_html", False)
         for item in iter_items(obj):
+
+            # DEBUG: log each item before converting to markdown/html
+            try:
+                doc_prefix = item.document.prefix if item.document else "?"
+                doc_path = getattr(item.document, "path", None) or getattr(item.document, "root", None) or "?"
+            except Exception:
+                doc_prefix = "?"
+                doc_path = "?"
+
+            if DEBUG_LINES:
+                log.warning(
+                    "PUBLISHING ITEM uid=%s depth=%s level=%s doc=%s file=%s",
+                    getattr(item, "uid", "?"),
+                    getattr(item, "depth", "?"),
+                    getattr(item, "level", "?"),
+                    doc_prefix,
+                    doc_path,
+                )
+
             # Create iten heading.
             complete_heading = self._generate_heading_from_item(item, to_html=to_html)
             yield complete_heading

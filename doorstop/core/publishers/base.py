@@ -231,6 +231,9 @@ class BasePublisher(metaclass=ABCMeta):
                 block.append(self.list["start"][list_type])
                 self.list["found"][list_type] = True
                 self.list["depth"][list_type] = indent
+                # FIX: When list does not start with depth=0 we need a better indent to start so that we can properly close the list
+                if self.list["indent"][list_type] == 0 and indent > 0:
+                    self.list["indent"][list_type] = indent
             elif self.list["depth"][list_type] < indent:
                 block.append(self.list["start"][list_type])
                 if self.list["depth"][list_type] == 0:
