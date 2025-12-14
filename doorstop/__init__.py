@@ -3,6 +3,7 @@
 """Package for doorstop."""
 
 from importlib.metadata import PackageNotFoundError, version
+from pathlib import Path
 
 from doorstop.common import DoorstopError, DoorstopInfo, DoorstopWarning
 from doorstop.core import (
@@ -18,8 +19,6 @@ from doorstop.core import (
     importer,
     publisher,
 )
-
-from pathlib import Path
 
 __project__ = "Doorstop"
 
