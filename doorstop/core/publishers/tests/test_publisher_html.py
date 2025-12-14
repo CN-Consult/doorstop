@@ -5,6 +5,7 @@
 # pylint: disable=unused-argument,protected-access
 
 import os
+from pathlib import Path
 import stat
 import unittest
 from secrets import token_hex
@@ -114,12 +115,12 @@ class TestModule(MockDataMixIn, unittest.TestCase):
         calls = [call(assets[0]), call(assets[1])]
         self.assertEqual(calls, mock_rm.call_args_list)
 
-    @patch("os.path.isdir", Mock(return_value=False))
+    @patch("doorstop.common.copy_dir_contents")
     @patch("doorstop.core.document.Document.copy_assets")
     @patch("os.makedirs")
     @patch("builtins.open")
     def test_publish_document_copies_assets(
-        self, mock_open, mock_makedirs, mock_copyassets
+        self, mock_open, mock_makedirs, mock_copyassets, mock_copydir
     ):
         """Verify that assets are published"""
         assets_path = os.path.join(
@@ -130,6 +131,11 @@ class TestModule(MockDataMixIn, unittest.TestCase):
         mock_open.side_effect = lambda *args, **kw: mock.mock_open(
             read_data="$body"
         ).return_value
+        def fake_copy(src, dst):
+            Path(dst).mkdir(parents=True, exist_ok=True)
+            if "views" in dst:
+                Path(os.path.join(dst, "doorstop.tpl")).touch()
+        mock_copydir.side_effect = fake_copy
         # Act
         path2 = publisher.publish(document, path, ".html")
         # Assert
@@ -166,6 +172,7 @@ class TestModule(MockDataMixIn, unittest.TestCase):
         for prefix in ("SYS", "HLR", "LLR", "HLT", "LLT"):
             mock_document = MagicMock()
             mock_document.prefix = prefix
+            mock_document.template = None
             mock_tree.documents.append(mock_document)
         mock_tree.draw = lambda: "(mock tree structure)"
         mock_item = Mock()
@@ -192,9 +199,9 @@ class TestModule(MockDataMixIn, unittest.TestCase):
         path = os.path.join(FILES, "testmatrix.csv")
         mock_tree = MagicMock()
         mock_tree.documents = []
+        from types import SimpleNamespace
         for prefix in ("SYS", "HLR", "LLR", "HLT", "LLT"):
-            mock_document = MagicMock()
-            mock_document.prefix = prefix
+            mock_document = SimpleNamespace(prefix=prefix, template=None)
             mock_tree.documents.append(mock_document)
         mock_tree.draw = lambda: "(mock tree structure)"
         mock_item = Mock()
@@ -213,6 +220,9 @@ class TestModule(MockDataMixIn, unittest.TestCase):
         html_publisher = publisher.check(".html", obj=mock_tree)
         # Create the self.dirpath first.
         os.makedirs(self.dirpath)
+        # Prepare templates so Bottle can locate the built-in views.
+        html_publisher.setPath(self.dirpath)
+        html_publisher.processTemplates(None)
         # Act
         html_publisher.create_matrix(self.dirpath)
         # Assert
