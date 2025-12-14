@@ -19,6 +19,7 @@ INDEX = "index.md"
 
 DEBUG_LINES = os.getenv("DOORSTOP_DEBUG_LINES", "0") == "1"
 
+
 class MarkdownPublisher(BasePublisher):
     """Markdown publisher."""
 
@@ -216,13 +217,9 @@ class MarkdownPublisher(BasePublisher):
         if item.heading:
             # Level and Text
             if settings.PUBLISH_HEADING_LEVELS:
-                standard = "{h} {lev} {t}".format(
-                    h=heading, lev=level, t=item.title()
-                )
+                standard = "{h} {lev} {t}".format(h=heading, lev=level, t=item.title())
             else:
-                standard = "{h} {t}".format(
-                    h=heading, t=item.title()
-                )
+                standard = "{h} {t}".format(h=heading, t=item.title())
             attr_list = self.format_attr_list(item, True)
             result = standard + attr_list
         else:
@@ -230,7 +227,9 @@ class MarkdownPublisher(BasePublisher):
             if settings.ENABLE_HEADERS:
                 if item.header:
                     if to_html:
-                        uid = "{h} <small>({u})</small>".format(h=item.header, u=item.uid)
+                        uid = "{h} <small>({u})</small>".format(
+                            h=item.header, u=item.uid
+                        )
                     else:
                         uid = "{h} _{u}_".format(h=item.header, u=item.uid)
                 else:
@@ -262,7 +261,11 @@ class MarkdownPublisher(BasePublisher):
             # DEBUG: log each item before converting to markdown/html
             try:
                 doc_prefix = item.document.prefix if item.document else "?"
-                doc_path = getattr(item.document, "path", None) or getattr(item.document, "root", None) or "?"
+                doc_path = (
+                    getattr(item.document, "path", None)
+                    or getattr(item.document, "root", None)
+                    or "?"
+                )
             except Exception:
                 doc_prefix = "?"
                 doc_path = "?"
@@ -321,15 +324,32 @@ class MarkdownPublisher(BasePublisher):
             # Add custom publish attributes
             if item.document and item.document.publish:
                 header_printed = False
+                attribute_defaults = (
+                    item.document._attribute_defaults  # pylint: disable=protected-access
+                    if hasattr(item.document, "_attribute_defaults")
+                    else None
+                )
                 for attr in item.document.publish:
-                    if not item.attribute(attr):
+                    value = item.attribute(attr)
+                    default_value = (
+                        attribute_defaults.get(attr)
+                        if isinstance(attribute_defaults, dict)
+                        else None
+                    )
+                    if default_value is not None and value == default_value:
                         continue
+                    if not value:
+                        continue
+                    value_str = str(value)
+                    value_str = value_str.replace("\r\n", "\n").replace("\r", "\n")
+                    value_str = value_str.rstrip("\n")
+                    value_str = value_str.replace("\n", "<br />")
                     if not header_printed:
                         header_printed = True
                         yield ""
                         yield "| Attribute | Value |"
                         yield "| --------- | ----- |"
-                    yield "| {} | {} |".format(attr, item.attribute(attr))
+                    yield "| {} | {} |".format(attr, value_str)
                 yield ""
 
             yield ""  # break between items

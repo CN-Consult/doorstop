@@ -575,7 +575,7 @@ class Item(BaseFileObject):  # pylint: disable=R0902
 
     def title(self):
         """Get the item's title.
-        
+
         Read from either the header or the first line of the text field.
 
         """
@@ -588,7 +588,7 @@ class Item(BaseFileObject):  # pylint: disable=R0902
 
     def description(self):
         """Get the item's description.
-        
+
         Read from the text field, omitting the first line if it would be
         included in the item's title.
 

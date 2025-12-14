@@ -19,7 +19,8 @@ class InitTestCase(unittest.TestCase):
         This test is a bit of a hack. It is intended to verify that the
         doorstop package can be imported as a local version. This is
         necessary because if the doorstop package is not installed in the
-        test environment, the version shall be set to "(local)". The patch
+        test environment, the version should fall back to the source
+        version (from pyproject) or "(local)" if unavailable. The patch
         ensures that the version lookup will fail.
         """
         mock_version.side_effect = PackageNotFoundError()
@@ -29,4 +30,9 @@ class InitTestCase(unittest.TestCase):
         from doorstop import VERSION
 
         # Assert that the version number is correct.
-        self.assertEqual("Doorstop v(local)", VERSION)
+        with open("pyproject.toml", "r") as f:
+            for line in f.readlines():
+                if "version" in line:
+                    pyproject_version = line.split("=")[1].strip().replace('"', "")
+                    break
+        self.assertEqual(f"Doorstop v{pyproject_version}", VERSION)

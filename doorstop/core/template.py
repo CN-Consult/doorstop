@@ -2,8 +2,8 @@
 
 """Functions to apply templates to documents."""
 
-import os
 import glob
+import os
 
 from yaml import safe_load
 

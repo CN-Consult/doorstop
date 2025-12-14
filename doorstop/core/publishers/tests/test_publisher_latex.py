@@ -21,7 +21,7 @@ class TestPublisherModule(MockDataMixIn, unittest.TestCase):
     def test_setting_publish_heading_levels_true(self):
         """Verify that the settings.PUBLISH_HEADING_LEVELS changes the output appropriately when True."""
         # Setup
-        expected = r"\subsection{Heading}\label{req3}\zlabel{req3}" + "\n\n"
+        expected = r"\subsection{Heading}\label{req3}\zlabel{req3}" + "\nHeading\n\n"
         # Act
         result = getLines(publisher.publish_lines(self.item, ".tex"))
         # Assert
@@ -31,7 +31,7 @@ class TestPublisherModule(MockDataMixIn, unittest.TestCase):
     def test_setting_publish_heading_levels_false(self):
         """Verify that the settings.PUBLISH_HEADING_LEVELS changes the output appropriately when False."""
         # Setup
-        expected = r"\subsection*{Heading}\label{req3}\zlabel{req3}" + "\n\n"
+        expected = r"\subsection*{Heading}\label{req3}\zlabel{req3}" + "\nHeading\n\n"
         # Act
         result = getLines(publisher.publish_lines(self.item, ".tex"))
         # Assert
