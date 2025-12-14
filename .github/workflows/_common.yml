@@ -44,7 +44,7 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python-version }}
-          architecture: x64
+          architecture: ${{ inputs.os == 'macos-latest' && 'arm64' || 'x64' }}
 
       - uses: Gr1N/setup-poetry@v9
 
