@@ -11,7 +11,6 @@ import pprint
 import shutil
 import tempfile
 import unittest
-from typing import List
 from unittest.mock import Mock, patch
 
 import openpyxl
@@ -689,7 +688,6 @@ class TestPublisher(unittest.TestCase):
             "markdown.extensions.sane_lists",
         )
 
-        path = os.path.join(FILES, "published2.html")
         # Act
         lines = core.publisher.publish_lines(
             self.document, ".html", toc=True, publisher=html_publisher
