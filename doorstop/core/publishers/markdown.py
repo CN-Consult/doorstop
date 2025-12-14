@@ -321,15 +321,32 @@ class MarkdownPublisher(BasePublisher):
             # Add custom publish attributes
             if item.document and item.document.publish:
                 header_printed = False
+                attribute_defaults = (
+                    item.document._attribute_defaults  # pylint: disable=protected-access
+                    if hasattr(item.document, "_attribute_defaults")
+                    else None
+                )
                 for attr in item.document.publish:
-                    if not item.attribute(attr):
+                    value = item.attribute(attr)
+                    default_value = (
+                        attribute_defaults.get(attr)
+                        if isinstance(attribute_defaults, dict)
+                        else None
+                    )
+                    if default_value is not None and value == default_value:
                         continue
+                    if not value:
+                        continue
+                    value_str = str(value)
+                    value_str = value_str.replace("\r\n", "\n").replace("\r", "\n")
+                    value_str = value_str.rstrip("\n")
+                    value_str = value_str.replace("\n", "<br />")
                     if not header_printed:
                         header_printed = True
                         yield ""
                         yield "| Attribute | Value |"
                         yield "| --------- | ----- |"
-                    yield "| {} | {} |".format(attr, item.attribute(attr))
+                    yield "| {} | {} |".format(attr, value_str)
                 yield ""
 
             yield ""  # break between items

@@ -122,23 +122,27 @@ class TestTemplate(MockDataMixIn, unittest.TestCase):
 
         # Check that only custom template is published.
         os.makedirs(self.dirpath)
-        # Create a custom template folder.
-        doc_path = self.mock_tree.documents[0].path
-        os.mkdir(os.path.join(doc_path, "template"))
-        Path(os.path.join(doc_path, "template", "custom_css.css")).touch()
+        # Create a standalone custom template folder with minimal views.
+        os.makedirs(self.datapath, exist_ok=True)
+        template_root = os.path.join(self.datapath, "custom_template_tree")
+        os.makedirs(os.path.join(template_root, "views"))
+        Path(os.path.join(template_root, "custom_css.css")).touch()
+        Path(os.path.join(template_root, "views", "doorstop.tpl")).touch()
         expected_walk = """{n}/
     template/
         custom_css.css
+        views/
+            doorstop.tpl
 """.format(
             n=self.hex
         )
         # Act
         asset_dir, selected_template = template.get_template(
-            self.mock_tree, self.dirpath, ".html", "custom_css"
+            self.mock_tree, self.dirpath, ".html", template_root
         )
         # Assert
         self.assertEqual(os.path.join(self.dirpath, "documents", "assets"), asset_dir)
-        self.assertEqual("custom_css", selected_template)
+        self.assertEqual("doorstop", selected_template)
         # Get the exported tree.
         walk = getWalk(self.dirpath)
         self.assertEqual(expected_walk, walk)
@@ -180,18 +184,21 @@ class TestTemplate(MockDataMixIn, unittest.TestCase):
                 doc_path = each.path
                 doc = each
                 break
-        os.mkdir(os.path.join(doc_path, "template"))
-        Path(os.path.join(doc_path, "template", "custom_css.css")).touch()
+        os.makedirs(self.datapath, exist_ok=True)
+        template_root = os.path.join(self.datapath, "custom_template_doc")
+        os.makedirs(os.path.join(template_root, "views"))
+        Path(os.path.join(template_root, "custom_css.css")).touch()
+        Path(os.path.join(template_root, "views", "doorstop.tpl")).touch()
         # Act
         asset_dir, selected_template = template.get_template(
-            doc, doc_path, ".html", "custom_css"
+            doc, doc_path, ".html", template_root
         )
         # Assert
         self.assertEqual(
             os.path.join(self.datapath, "reqs", "tutorial", "documents", "assets"),
             asset_dir,
         )
-        self.assertEqual("custom_css", selected_template)
+        self.assertEqual("doorstop", selected_template)
 
     def test_custom_template_without_folder(self):
         """Verify that a custom template that is missing a locally defined
@@ -199,7 +206,7 @@ class TestTemplate(MockDataMixIn, unittest.TestCase):
         # Act
         with self.assertRaises(DoorstopError):
             _, _ = template.get_template(
-                self.mock_tree, self.dirpath, ".html", "custom_css"
+                self.mock_tree, self.dirpath, ".html", os.path.join(self.dirpath, "missing_template")
             )
 
     def test_standard_latex_doc(self):

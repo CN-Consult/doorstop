@@ -73,7 +73,7 @@ types-requests = "*"
 types-setuptools = "*"
 
 # Testing
-pytest = "^6.2.5"
+pytest = ">=6.2.5,<10"
 pytest-cov = "*"
 pytest-expecter = "*"
 pytest-sugar = "*"

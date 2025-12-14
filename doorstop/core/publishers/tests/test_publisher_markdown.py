@@ -213,6 +213,64 @@ class TestModule(MockDataMixIn, unittest.TestCase):
         # Assert
         self.assertEqual(expected, result)
 
+    def test_custom_attributes_with_default_not_published(self):
+        """Verify default-valued custom attributes are not published."""
+        generated_data = (
+            r"owner: TBD" + "\n"
+            r"text: |" + "\n"
+            r"  Test of defaulted custom attributes."
+        )
+        document = MockDocument("/some/path")
+        document._file = (
+            "settings:" + "\n"
+            "  digits: 3" + "\n"
+            "  prefix: REQ" + "\n"
+            "  sep: '-'" + "\n"
+            "attributes:" + "\n"
+            "  defaults:" + "\n"
+            "    owner: TBD" + "\n"
+            "  publish:" + "\n"
+            "    - owner" + "\n"
+        )
+        document.load(reload=True)
+        itemPath = os.path.join("path", "to", "REQ-001.yml")
+        item = MockItem(document, itemPath)
+        item._file = generated_data
+        item.load(reload=True)
+        document._items.append(item)
+        result = getLines(publisher.publish_lines(document, ".md"))
+        self.assertNotIn("| Attribute | Value |", result)
+        self.assertNotIn("| owner | TBD |", result)
+
+    def test_custom_attributes_multiline_value(self):
+        """Verify multiline attribute values render safely in table rows."""
+        generated_data = (
+            r"notes: |" + "\n"
+            r"  first line" + "\n"
+            r"  second line" + "\n"
+            r"text: |" + "\n"
+            r"  Body text."
+        )
+        document = MockDocument("/some/path")
+        document._file = (
+            "settings:" + "\n"
+            "  digits: 3" + "\n"
+            "  prefix: REQ" + "\n"
+            "  sep: '-'" + "\n"
+            "attributes:" + "\n"
+            "  publish:" + "\n"
+            "    - notes" + "\n"
+        )
+        document.load(reload=True)
+        itemPath = os.path.join("path", "to", "REQ-001.yml")
+        item = MockItem(document, itemPath)
+        item._file = generated_data
+        item.load(reload=True)
+        document._items.append(item)
+        result = getLines(publisher.publish_lines(document, ".md"))
+        self.assertIn("| notes | first line<br />second line |", result)
+        self.assertNotIn("| notes | first line\nsecond line |", result)
+
 
 @patch("doorstop.core.item.Item", MockItem)
 class TestTableOfContents(unittest.TestCase):
