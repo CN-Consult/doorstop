@@ -5,9 +5,9 @@
 # pylint: disable=unused-argument,protected-access
 
 import os
-from pathlib import Path
 import stat
 import unittest
+from pathlib import Path
 from secrets import token_hex
 from shutil import rmtree
 from unittest import mock
@@ -131,10 +131,12 @@ class TestModule(MockDataMixIn, unittest.TestCase):
         mock_open.side_effect = lambda *args, **kw: mock.mock_open(
             read_data="$body"
         ).return_value
+
         def fake_copy(src, dst):
             Path(dst).mkdir(parents=True, exist_ok=True)
             if "views" in dst:
                 Path(os.path.join(dst, "doorstop.tpl")).touch()
+
         mock_copydir.side_effect = fake_copy
         # Act
         path2 = publisher.publish(document, path, ".html")
@@ -200,6 +202,7 @@ class TestModule(MockDataMixIn, unittest.TestCase):
         mock_tree = MagicMock()
         mock_tree.documents = []
         from types import SimpleNamespace
+
         for prefix in ("SYS", "HLR", "LLR", "HLT", "LLT"):
             mock_document = SimpleNamespace(prefix=prefix, template=None)
             mock_tree.documents.append(mock_document)

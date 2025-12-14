@@ -19,6 +19,7 @@ INDEX = "index.md"
 
 DEBUG_LINES = os.getenv("DOORSTOP_DEBUG_LINES", "0") == "1"
 
+
 class MarkdownPublisher(BasePublisher):
     """Markdown publisher."""
 
@@ -216,13 +217,9 @@ class MarkdownPublisher(BasePublisher):
         if item.heading:
             # Level and Text
             if settings.PUBLISH_HEADING_LEVELS:
-                standard = "{h} {lev} {t}".format(
-                    h=heading, lev=level, t=item.title()
-                )
+                standard = "{h} {lev} {t}".format(h=heading, lev=level, t=item.title())
             else:
-                standard = "{h} {t}".format(
-                    h=heading, t=item.title()
-                )
+                standard = "{h} {t}".format(h=heading, t=item.title())
             attr_list = self.format_attr_list(item, True)
             result = standard + attr_list
         else:
@@ -230,7 +227,9 @@ class MarkdownPublisher(BasePublisher):
             if settings.ENABLE_HEADERS:
                 if item.header:
                     if to_html:
-                        uid = "{h} <small>({u})</small>".format(h=item.header, u=item.uid)
+                        uid = "{h} <small>({u})</small>".format(
+                            h=item.header, u=item.uid
+                        )
                     else:
                         uid = "{h} _{u}_".format(h=item.header, u=item.uid)
                 else:
@@ -262,7 +261,11 @@ class MarkdownPublisher(BasePublisher):
             # DEBUG: log each item before converting to markdown/html
             try:
                 doc_prefix = item.document.prefix if item.document else "?"
-                doc_path = getattr(item.document, "path", None) or getattr(item.document, "root", None) or "?"
+                doc_path = (
+                    getattr(item.document, "path", None)
+                    or getattr(item.document, "root", None)
+                    or "?"
+                )
             except Exception:
                 doc_prefix = "?"
                 doc_path = "?"

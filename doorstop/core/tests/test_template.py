@@ -206,7 +206,10 @@ class TestTemplate(MockDataMixIn, unittest.TestCase):
         # Act
         with self.assertRaises(DoorstopError):
             _, _ = template.get_template(
-                self.mock_tree, self.dirpath, ".html", os.path.join(self.dirpath, "missing_template")
+                self.mock_tree,
+                self.dirpath,
+                ".html",
+                os.path.join(self.dirpath, "missing_template"),
             )
 
     def test_standard_latex_doc(self):

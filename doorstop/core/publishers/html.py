@@ -301,17 +301,28 @@ class HtmlPublisher(MarkdownPublisher):
             )
 
         # Generate HTML
-        if DEBUG_LINES: log.warning("HTML lines(): start _lines_markdown for obj=%s", getattr(obj, "prefix", type(obj)))
+        if DEBUG_LINES:
+            log.warning(
+                "HTML lines(): start _lines_markdown for obj=%s",
+                getattr(obj, "prefix", type(obj)),
+            )
         text_lines = list(self._lines_markdown(obj, linkify=linkify, to_html=True))
-        if DEBUG_LINES: log.warning("HTML lines(): done _lines_markdown, produced %d lines", len(text_lines))
+        if DEBUG_LINES:
+            log.warning(
+                "HTML lines(): done _lines_markdown, produced %d lines", len(text_lines)
+            )
         text = "\n".join(text_lines)
 
-        #text = "\n".join(self._lines_markdown(obj, linkify=linkify, to_html=True))
+        # text = "\n".join(self._lines_markdown(obj, linkify=linkify, to_html=True))
         # We need to handle escaped back-ticks before we pass the text to markdown.
         text = text.replace("\\`", "##!!TEMPINLINE!!##")
-        if DEBUG_LINES: log.warning("HTML RENDER start for document %s", getattr(obj, "prefix", "?"))
+        if DEBUG_LINES:
+            log.warning(
+                "HTML RENDER start for document %s", getattr(obj, "prefix", "?")
+            )
         body_to_check = markdown.markdown(text, extensions=self.EXTENSIONS).splitlines()
-        if DEBUG_LINES: log.warning("HTML RENDER done for document %s", getattr(obj, "prefix", "?"))
+        if DEBUG_LINES:
+            log.warning("HTML RENDER done for document %s", getattr(obj, "prefix", "?"))
         block = []
         # Check for nested lists since they are not supported by the markdown_sane_lists plugin.
         for i, line in enumerate(body_to_check):
@@ -319,11 +330,15 @@ class HtmlPublisher(MarkdownPublisher):
             # multiple back-ticks in a row, we need group them in a single <code> block.
 
             if DEBUG_LINES:
-                log.warning("HTML lines(): processing line at i=%d/%d with content: '%s'", i, len(body_to_check),line)
+                log.warning(
+                    "HTML lines(): processing line at i=%d/%d with content: '%s'",
+                    i,
+                    len(body_to_check),
+                    line,
+                )
             else:
                 if i % 500 == 0:
                     log.info("HTML lines(): progress i=%d/%d", i, len(body_to_check))
-
 
             line = re.sub(
                 r"(##!!TEMPINLINE!!##)+",
