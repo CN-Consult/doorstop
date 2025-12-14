@@ -663,7 +663,6 @@ class TestPublisher(unittest.TestCase):
             "markdown.extensions.sane_lists",
         )
 
-        path = os.path.join(FILES, "published.html")
         # Act
         lines = core.publisher.publish_lines(
             self.document, ".html", linkify=True, toc=True, publisher=html_publisher
