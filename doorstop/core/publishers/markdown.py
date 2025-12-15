@@ -344,6 +344,7 @@ class MarkdownPublisher(BasePublisher):
                     value_str = value_str.replace("\r\n", "\n").replace("\r", "\n")
                     value_str = value_str.rstrip("\n")
                     value_str = value_str.replace("\n", "<br />")
+                    value_str = value_str.replace("|", "&#124;")
                     if not header_printed:
                         header_printed = True
                         yield ""

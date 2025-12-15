@@ -271,6 +271,32 @@ class TestModule(MockDataMixIn, unittest.TestCase):
         self.assertIn("| notes | first line<br />second line |", result)
         self.assertNotIn("| notes | first line\nsecond line |", result)
 
+    def test_custom_attributes_pipe_value(self):
+        """Verify pipe characters are escaped in attribute table values."""
+        generated_data = (
+            r"summary: Needs | bars" + "\n"
+            r"text: |" + "\n"
+            r"  Body text."
+        )
+        document = MockDocument("/some/path")
+        document._file = (
+            "settings:" + "\n"
+            "  digits: 3" + "\n"
+            "  prefix: REQ" + "\n"
+            "  sep: '-'" + "\n"
+            "attributes:" + "\n"
+            "  publish:" + "\n"
+            "    - summary" + "\n"
+        )
+        document.load(reload=True)
+        itemPath = os.path.join("path", "to", "REQ-001.yml")
+        item = MockItem(document, itemPath)
+        item._file = generated_data
+        item.load(reload=True)
+        document._items.append(item)
+        result = getLines(publisher.publish_lines(document, ".md"))
+        self.assertIn("| summary | Needs &#124; bars |", result)
+
 
 @patch("doorstop.core.item.Item", MockItem)
 class TestTableOfContents(unittest.TestCase):
