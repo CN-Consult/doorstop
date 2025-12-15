@@ -274,9 +274,7 @@ class TestModule(MockDataMixIn, unittest.TestCase):
     def test_custom_attributes_pipe_value(self):
         """Verify pipe characters are escaped in attribute table values."""
         generated_data = (
-            r"summary: Needs | bars" + "\n"
-            r"text: |" + "\n"
-            r"  Body text."
+            r"summary: Needs | bars" + "\n" r"text: |" + "\n" r"  Body text."
         )
         document = MockDocument("/some/path")
         document._file = (
